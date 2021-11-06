@@ -21,9 +21,11 @@ def load_albert_v2():
     model = AutoModelForSequenceClassification.from_pretrained("textattack/albert-base-v2-imdb",
                                                                return_dict=False)
     model.eval()
-#    model = torch.jit.load("models/traced_albert_v2.pt")
     return model
 
+def load_albert_v2_traced():
+    model = torch.jit.load("models/traced_albert_v2.pt")
+    return model
 
 def wrap_call_with_numpy(model):
     """Wraps a pytorch model so that

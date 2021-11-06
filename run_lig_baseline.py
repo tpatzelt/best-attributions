@@ -6,13 +6,13 @@ from baselines import ZeroBaselineFactory
 from evaluators import ProportionalityEvaluator
 from helpers import (load_albert_v2, load_imdb_albert_lig_data,
                      extract_token_ids_and_attributions,
-                     wrap_call_with_numpy)
+                     wrap_call_with_numpy, load_albert_v2_traced)
 
 ex = Experiment('scoring-lig')
 ex.observers.append(MongoObserver(url="localhost:27017"))
 
 data = load_imdb_albert_lig_data()[:10]
-model = load_albert_v2()
+model = load_albert_v2_traced()
 callable_model = wrap_call_with_numpy(model)
 
 evaluator = ProportionalityEvaluator(model=callable_model, baseline_factory=ZeroBaselineFactory)
