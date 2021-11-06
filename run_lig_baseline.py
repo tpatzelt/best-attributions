@@ -7,9 +7,9 @@ from evaluators import ProportionalityEvaluator
 from helpers import (load_albert_v2, load_imdb_albert_lig_data,
                      extract_token_ids_and_attributions,
                      wrap_call_with_numpy, load_albert_v2_traced)
-
+from cfg import DB_URI, DB_NAME
 ex = Experiment('scoring-lig')
-ex.observers.append(MongoObserver(url="localhost:27017"))
+ex.observers.append(MongoObserver(url=DB_URI, db_name=DB_NAME))
 
 data = load_imdb_albert_lig_data()[:10]
 model = load_albert_v2_traced()

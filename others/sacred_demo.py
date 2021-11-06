@@ -1,8 +1,11 @@
 import numpy as np
 from sacred import Experiment
 from sacred.observers import MongoObserver
+from cfg import DB_URI, DB_NAME
+ex = Experiment('random_sampling-1')
 
-ex = Experiment('random_sampling')
+
+ex.observers.append(MongoObserver(url=DB_URI, db_name=DB_NAME))
 ex.observers.append(MongoObserver())
 
 
