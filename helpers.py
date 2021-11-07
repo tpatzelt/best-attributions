@@ -30,7 +30,7 @@ def load_albert_v2_traced():
 def wrap_call_with_numpy(model):
     """Wraps a pytorch model so that
     single numpy observation can be passed
-    and the logit are returned.
+    and the logits are returned.
     """
     return lambda x: model(torch.tensor(x[None]))[0].detach().numpy()[0]
 
@@ -39,7 +39,10 @@ def load_imdb_albert_lig_data():
     return thermostat.load("imdb-albert-lig")
 
 
-def extract_token_ids_and_attributions(instance, start=0, end=-1):
+def extract_token_ids_and_attributions(instance, trim_zeros=True, start=0, end=-1):
     tokens = instance.input_ids[start:end]
     attributions = instance.attributions[start:end]
+    if trim_zeros:
+        tokens = np.trim_zeros(tokens, "b")
+        attributions = attributions[:len(tokens)]
     return np.array(tokens), np.array(attributions)
