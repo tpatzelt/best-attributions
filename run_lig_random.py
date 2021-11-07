@@ -35,8 +35,8 @@ def run(sample_size, random_sample_size):
     callable_model = wrap_call_with_numpy(model)
 
     evaluator = ProportionalityEvaluator(model=callable_model, baseline_factory=ZeroBaselineFactory)
-    tpn_results, tps_results = [], []
     for i, instance in enumerate(data):
+        tpn_results, tps_results = [], []
         if i % (len(data) / 10) == 0:
             print(f"Finished {i}/{len(data)}.")
         observation, attribution_values = extract_token_ids_and_attributions(instance=instance,
