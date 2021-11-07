@@ -135,6 +135,6 @@ class ProportionalityEvaluator:
                 attribution_values=attribution_values,
                 reverse=True,
                 saliency_ratio_per_step=saliency_ratio_per_step))
-        tpn_score = self._get_proportionality_value(observation=observation,
+        tps_score = self._get_proportionality_value(observation=observation,
                                                     masks_ratios=masks_ratios)
-        return tpn_score
+        return tps_score
