@@ -60,8 +60,8 @@ def run(sample_size, random_sample_size):
             random_tpn_results_per_sample.append(tpn)
             random_tps_results_per_sample.append(tps)
 
-        _log_scores("tpn-lig", tpn_results)
-        _log_scores("tps-lig", tps_results)
+        _log_scores("tpn-lig", tpn_results * random_sample_size)
+        _log_scores("tps-lig", tps_results * random_sample_size)
 
         _log_scores("tpn-per-sample-random", random_tpn_results_per_sample)
         _log_scores("tps-per-sample-random", random_tps_results_per_sample)
