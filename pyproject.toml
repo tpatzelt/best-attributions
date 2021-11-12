@@ -15,6 +15,9 @@ jupyter = "^1.0.0"
 tqdm = "^4.62.3"
 sacred = "^0.8.2"
 pymongo = "^3.12.1"
+onnxruntime = "^1.9.0"
+onnx = "^1.10.2"
+captum = "^0.4.1"
 
 
 [tool.poetry.dev-dependencies]

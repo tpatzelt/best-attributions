@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import thermostat
 import torch
+import onnxruntime as ort
 from transformers import AutoModelForSequenceClassification
 
 
@@ -33,6 +34,12 @@ def wrap_call_with_numpy(model):
     and the logits are returned.
     """
     return lambda x: model(torch.tensor(x[None]))[0].detach().numpy()[0]
+
+def load_distilbert():
+    ort_session = ort.InferenceSession("models/distilbert-base-uncased-imdb2/model.onnx")
+    callable_expr = lambda x: ort_session.run(["output_0"], dict(input_ids=x[None],
+                                                        attention_mask=np.ones_like(x[None])))[0][0]
+    return callable_expr
 
 
 def load_imdb_albert_lig_data():
