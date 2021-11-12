@@ -18,6 +18,7 @@ pymongo = "^3.12.1"
 onnxruntime = "^1.9.0"
 onnx = "^1.10.2"
 captum = "^0.4.1"
+dnspython = "<3.0.0,>=1.16.0"
 
 
 [tool.poetry.dev-dependencies]
