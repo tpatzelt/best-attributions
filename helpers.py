@@ -35,8 +35,11 @@ def wrap_call_with_numpy(model):
     """
     return lambda x: model(torch.tensor(x[None]))[0].detach().numpy()[0]
 
-def load_distilbert():
-    ort_session = ort.InferenceSession("models/distilbert-base-uncased-imdb/model-optimized-quantized.onnx")
+def load_distilbert(from_notebook=False):
+    ort_session = ort.InferenceSession(
+        "../models/distilbert-base-uncased-imdb/model-optimized-quantized.onnx")
+        # "../" if from_notebook
+        # else "" + "models/distilbert-base-uncased-imdb/model-optimized-quantized.onnx")
     callable_expr = lambda x: ort_session.run(["output_0"], dict(input_ids=x[None],
                                                         attention_mask=np.ones_like(x[None])))[0][0]
     return callable_expr
