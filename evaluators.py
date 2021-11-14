@@ -112,7 +112,6 @@ class ProportionalityEvaluator:
             ratio_values.append(previous_ratio + ratio_normal)
             previous_ratio += ratio_normal
             last_output_value = ablated_prediction_normal
-
         normalizing_factor = 1 / (
                 original_output[predicted_class] * min(1, baseline_confidence / last_output_value)
         )

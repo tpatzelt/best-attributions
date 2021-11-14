@@ -1,8 +1,11 @@
+import json
+
 import matplotlib.pyplot as plt
 import numpy as np
+import onnxruntime as ort
 import thermostat
 import torch
-import onnxruntime as ort
+from scipy.special import softmax
 from transformers import AutoModelForSequenceClassification
 
 
@@ -35,14 +38,25 @@ def wrap_call_with_numpy(model):
     """
     return lambda x: model(torch.tensor(x[None]))[0].detach().numpy()[0]
 
-def load_distilbert(from_notebook=False):
+
+def load_distilbert(return_softmax=0):
     ort_session = ort.InferenceSession(
-        "../models/distilbert-base-uncased-imdb/model-optimized-quantized.onnx")
-        # "../" if from_notebook
-        # else "" + "models/distilbert-base-uncased-imdb/model-optimized-quantized.onnx")
-    callable_expr = lambda x: ort_session.run(["output_0"], dict(input_ids=x[None],
-                                                        attention_mask=np.ones_like(x[None])))[0][0]
-    return callable_expr
+        "models/distilbert-base-uncased-imdb/model-optimized-quantized.onnx")
+    if return_softmax:
+        return lambda x: softmax(ort_session.run(["output_0"],
+                                                 dict(input_ids=x[None],
+                                                      attention_mask=np.ones_like(x[None])))[0][0],
+                                 axis=-1)
+    else:
+        return lambda x: ort_session.run(["output_0"],
+                                         dict(input_ids=x[None],
+                                              attention_mask=np.ones_like(x[None])))[0][0]
+
+
+def load_imdb_distilbert_feature_ablation():
+    with open("data/albert-imdb-feature-ablation-1000.json") as fp:
+        data = json.load(fp=fp)
+    return data
 
 
 def load_imdb_albert_lig_data():
