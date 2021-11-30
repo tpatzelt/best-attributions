@@ -31,7 +31,8 @@ for sample in tqdm(dataset):
     observation = input_ids[0].detach().numpy()
     target_class = torch.tensor(model(observation)).argmax()
     attribution = method.attribute(input_ids, target=target_class, method='gausslegendre')[0] \
-        .detach().numpy() * -1
+        .detach().numpy()
+    attribution = attribution * -1 + .2
 
     tpn = evaluator.compute_tpn(observation=observation,
                                 attribution_values=attribution)
@@ -43,7 +44,7 @@ for sample in tqdm(dataset):
 
 # %%
 
-with open("data/feature-ablation.json", "w") as fp:
+with open("data/feature-ablation-v2.json", "w") as fp:
     json.dump(attributions, fp)
 
 # %%
