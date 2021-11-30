@@ -39,8 +39,9 @@ def wrap_call_with_numpy(model):
     return lambda x: model(torch.tensor(x[None]))[0].detach().numpy()[0]
 
 
-def load_distilbert(return_softmax=0):
-    ort_session = ort.InferenceSession(
+def load_distilbert(return_softmax=1, from_notebook=0):
+    ort_session = ort.InferenceSession((
+        '../' if from_notebook else '') + \
         "models/distilbert-base-uncased-imdb/model-optimized-quantized.onnx")
     if return_softmax:
         return lambda x: softmax(ort_session.run(["output_0"],

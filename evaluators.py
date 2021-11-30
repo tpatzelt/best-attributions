@@ -115,9 +115,13 @@ class ProportionalityEvaluator:
         normalizing_factor = 1 / (
                 original_output[predicted_class] * min(1, baseline_confidence / last_output_value)
         )
-        return normalizing_factor * auc(
-            x=np.asarray(ratio_values), y=np.asarray(proportionality_values)
-        )
+        try:
+            auc_value = auc(
+                x=np.asarray(ratio_values), y=np.asarray(proportionality_values)
+            )
+        except ValueError:
+            return None
+        return normalizing_factor * auc_value
 
     def compute_tpn(self, observation, attribution_values, saliency_ratio_per_step=.2):
         masks_ratios = list(
