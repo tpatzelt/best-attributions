@@ -17,8 +17,6 @@ class HillClimber:
         bounds = np.asarray([self.bounds for _ in range(len(observation))])
         # generate an initial point
         solution = bounds[:, 0] + np.random.rand(len(bounds)) * (bounds[:, 1] - bounds[:, 0])
-        #solution = bounds[:, 0] + np.random.uniform(size=len(bounds)) * (bounds[:, 1] - bounds[
-        #                                                                                 :,0])
         # evaluate the initial point
         solution_eval = self.objective(solution)
         # run the hill climb
