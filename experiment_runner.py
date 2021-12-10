@@ -1,11 +1,14 @@
 import json
+import time
 from typing import List
+
+import numpy as np
 from sacred import Experiment
 from tqdm import tqdm
-import numpy as np
+
 from attribution_methods import AttributionMethod
 from evaluators import Evaluator
-import time
+
 
 class ExperimentRunner:
 
@@ -34,13 +37,9 @@ class ExperimentRunner:
             for name, value in result.items():
                 self.experiment.log_scalar(name=name, value=value)
 
-        attribution_path = f"data/{time.strftime('%Y-%d-%m-%H:%M:%S')}-{str(self.attribution_method)}.json"
+        attribution_path = f"data/{time.strftime('%Y-%d-%m-%H-%M')}-" \
+                           f"{self.name}.json"
         with open(attribution_path, "w") as fp:
             json.dump(attributions, fp)
 
         self.experiment.add_artifact(attribution_path)
-
-
-
-
-

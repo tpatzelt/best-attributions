@@ -1,15 +1,15 @@
+import abc
 from typing import List, Tuple, Generator
 
 import numpy as np
 from numpy import ma
-from sklearn.metrics import auc
 from numpy.typing import NDArray
-import abc
+from sklearn.metrics import auc
+
 
 class Evaluator(abc.ABC):
     def evaluate(self, observation, attribution_values, **kwargs) -> dict:
         raise NotImplementedError
-
 
 
 class ProportionalityEvaluator(Evaluator):
@@ -150,7 +150,16 @@ https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619
 
     def evaluate(self, observation, attribution_values, **kwargs) -> dict:
         tpn = self.compute_tpn(observation=observation,
-                                    attribution_values=attribution_values)
+                               attribution_values=attribution_values)
         tps = self.compute_tps(observation=observation,
-                                    attribution_values=attribution_values)
+                               attribution_values=attribution_values)
         return dict(tpn=tpn, tps=tps)
+
+
+class DummyAverageEvaluator(Evaluator):
+    """Returns the mean and median of attribution values as result"""
+
+    def evaluate(self, observation, attribution_values, **kwargs) -> dict:
+        mean = np.mean(attribution_values)
+        median = np.median(attribution_values)
+        return dict(mean=mean, median=median)
