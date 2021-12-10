@@ -1,12 +1,16 @@
 import numpy as np
+import abc
 
+class AttributionMethod(abc.ABC):
+    def get_attribution_values(self, observation: np.array):
+        raise NotImplementedError
 
-class RandomAttributionValues:
+class RandomAttributionValues(AttributionMethod):
     def get_attribution_values(self, observation: np.array):
         return np.random.random_sample(observation.shape)
 
 
-class HillClimber:
+class HillClimber(AttributionMethod):
     def __init__(self, objective, bounds, iterations, step_size):
         self.objective = objective
         self.bounds = bounds
