@@ -4,9 +4,15 @@ import numpy as np
 from numpy import ma
 from sklearn.metrics import auc
 from numpy.typing import NDArray
+import abc
+
+class Evaluator(abc.ABC):
+    def evaluate(self, observation, attribution_values, **kwargs) -> dict:
+        raise NotImplementedError
 
 
-class ProportionalityEvaluator:
+
+class ProportionalityEvaluator(Evaluator):
     def __init__(self, baseline_factory, model):
         self.baseline_factory = baseline_factory
         self.model = model
@@ -18,7 +24,7 @@ class ProportionalityEvaluator:
 
         Each element is a tuple that corresponds to a location in x.
         x[sorted_index(x)[k] returns the k-th largest value in the array.
-
+https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619345&notif_id=1638259397597864&notif_t=group_highlights&ref=notif
         :param x: Multi-dimensional array to be indexed.
         :return: List of indices in ascending order.
         """
@@ -141,3 +147,10 @@ class ProportionalityEvaluator:
         tps_score = self._get_proportionality_value(observation=observation,
                                                     masks_ratios=masks_ratios)
         return tps_score
+
+    def evaluate(self, observation, attribution_values, **kwargs) -> dict:
+        tpn = self.compute_tpn(observation=observation,
+                                    attribution_values=attribution_values)
+        tps = self.compute_tps(observation=observation,
+                                    attribution_values=attribution_values)
+        return dict(tpn=tpn, tps=tps)
