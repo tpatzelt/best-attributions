@@ -5,7 +5,7 @@ from tqdm import tqdm
 import numpy as np
 from attribution_methods import AttributionMethod
 from evaluators import Evaluator
-
+import time
 
 class ExperimentRunner:
 
@@ -31,10 +31,10 @@ class ExperimentRunner:
 
             result = self.evaluator.evaluate(observation=observation,
                                              attribution_values=attribution)
-            self.experiment.log_scalar(name='tpn', value=result["tpn"])
-            self.experiment.log_scalar(name='tps', value=result["tps"])
+            for name, value in result.items():
+                self.experiment.log_scalar(name=name, value=value)
 
-        attribution_path = f"data/{self.name}.json"
+        attribution_path = f"data/{time.strftime('%Y-%d-%m-%H:%M:%S')}-{str(self.attribution_method)}.json"
         with open(attribution_path, "w") as fp:
             json.dump(attributions, fp)
 
