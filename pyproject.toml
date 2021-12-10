@@ -21,6 +21,7 @@ dnspython = "<3.0.0,>=1.16.0"
 prettytable = "^2.4.0"
 pylighter = "^0.0.3"
 seaborn = "^0.11.2"
+scikit-learn = "^1.0.1"
 
 
 [tool.poetry.dev-dependencies]
