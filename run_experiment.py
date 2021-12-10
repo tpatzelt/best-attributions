@@ -30,10 +30,11 @@ def base():
     attribution_method = {
         "name": None
     }
+    softmax_attributions = True
     try:
         name = "-".join([str(name) if name else "None" for name in
                          [attribution_method["name"], model["name"], Path(dataset["path"]).stem,
-                          evaluation["name"]]]
+                          evaluation["name"], str(softmax_attributions)]]
                         )
     except TypeError:
         raise TypeError("Experiment cannot run in 'base' mode.")
@@ -64,7 +65,7 @@ def dummy_config():
         "name": "dummy-average"
     }
     attribution_method = {
-        "name": "random-attribution-values"
+        "name": "random-attribution-values",
     }
     dataset = {
         'path': "data/imdb-distilbert-1000.json",
@@ -73,7 +74,7 @@ def dummy_config():
 
 
 @ex.automain
-def run_experiment(name: str, dataset: dict, model: dict, attribution_method: dict, evaluation: dict):
+def run_experiment(name: str, dataset: dict, model: dict, attribution_method: dict, evaluation: dict, softmax_attributions: bool):
     num_samples = dataset["num_samples"]
     with open(dataset["path"], "r") as fp:
         dataset = json.load(fp)
@@ -107,5 +108,6 @@ def run_experiment(name: str, dataset: dict, model: dict, attribution_method: di
                               attribution_method=attribution_method,
                               dataset=dataset,
                               evaluator=evaluator,
-                              experiment=ex)
+                              experiment=ex,
+                              softmax_attributions=softmax_attributions)
     runner.run()
