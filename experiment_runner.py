@@ -37,7 +37,7 @@ class ExperimentRunner:
             for name, value in result.items():
                 self.experiment.log_scalar(name=name, value=value)
 
-        attribution_path = f"data/{time.strftime('%Y-%d-%m-%H-%M')}-" \
+        attribution_path = f"data/{time.strftime('%Y-%d-%m_%H%M')}-" \
                            f"{self.name}.json"
         with open(attribution_path, "w") as fp:
             json.dump(attributions, fp)

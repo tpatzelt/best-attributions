@@ -17,18 +17,23 @@ ex.observers.extend([MongoObserver(url=DB_URI, db_name=DB_NAME), FileStorageObse
 
 @ex.config
 def base():
-    evaluation = "proportionality"
-    dataset_path = None
-    model = None
+    evaluation = {
+        "name": None
+    }
+    dataset = {
+        'path': None,
+        'num_samples': None
+    }
+    model = {
+        'name': None,
+    }
     attribution_method = {
         "name": None
     }
-    num_samples = None
-    baseline = None
     try:
         name = "-".join([str(name) if name else "None" for name in
-                         [attribution_method["name"], model, Path(dataset_path).stem,
-                          num_samples, baseline, evaluation]]
+                         [attribution_method["name"], model["name"], Path(dataset["path"]).stem,
+                          evaluation["name"]]]
                         )
     except TypeError:
         raise TypeError("Experiment cannot run in 'base' mode.")
@@ -36,49 +41,60 @@ def base():
 
 @ex.named_config
 def random_attributions():
-    dataset_path = "data/imdb-distilbert-1000.json"
-    model = "distilbert-quantized"
-    attribution_method = {
-        "name": "random-attribution-values"
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
     }
-    num_samples = 1
-    baseline = "zero"
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    dataset = {
+        'path': "data/imdb-distilbert-1000.json",
+        'num_samples': 1000
+    }
+    attribution_method = {
+        "name": "random-attribution-values",
+    }
 
 
 @ex.named_config
 def dummy_config():
-    evaluation = "dummy-average"
-    dataset_path = "data/imdb-distilbert-1000.json"
+    evaluation = {
+        "name": "dummy-average"
+    }
     attribution_method = {
         "name": "random-attribution-values"
     }
-    num_samples = None
-    baseline = "zero"
+    dataset = {
+        'path': "data/imdb-distilbert-1000.json",
+        'num_samples': 1000
+    }
 
 
 @ex.automain
-def run_experiment(name: str, dataset_path: str, model: str, attribution_method: dict, num_samples: int, baseline: str, evaluation: str):
-    with open(dataset_path, "r") as fp:
+def run_experiment(name: str, dataset: dict, model: dict, attribution_method: dict, evaluation: dict):
+    num_samples = dataset["num_samples"]
+    with open(dataset["path"], "r") as fp:
         dataset = json.load(fp)
 
-    if model == "distilbert-quantized":
-        model = load_distilbert()
-    elif model is None:
+    if model["name"] == "distilbert":
+        if model["quantized"]:
+            model = load_distilbert()
+        else:
+            raise ValueError('Only qunatized distilbert available.')
+
+    elif not model["name"]:
         print("Warning: No model provided for this experiment.")
     else:
         raise ValueError(f"Model string '{model}' not supported.")
 
-    if baseline == "zero":
-        baseline_factory = ZeroBaselineFactory
-    elif baseline is None:
-        print("Warning: No baseline provided for this experiment.")
-        baseline_factory = None
-    else:
-        raise ValueError(f"Baseline string '{baseline}' not supported.")
-
-    if evaluation == 'proportionality':
-        evaluator = ProportionalityEvaluator(model=model, baseline_factory=baseline_factory)
-    elif evaluation == 'dummy-average':
+    if evaluation["name"] == 'proportionality':
+        if evaluation["baseline_factory"] == "zero":
+            evaluator = ProportionalityEvaluator(model=model, baseline_factory=ZeroBaselineFactory())
+        else:
+            raise ValueError("Proportionaly Evaluation only availale with Zero BaselineFactory.")
+    elif evaluation["name"] == 'dummy-average':
         evaluator = DummyAverageEvaluator()
     else:
         raise ValueError(f"Evaluation string '{evaluation}' not supported.")
