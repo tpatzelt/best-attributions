@@ -4,7 +4,7 @@ from pathlib import Path
 from sacred import Experiment
 from sacred.observers import MongoObserver, FileStorageObserver
 
-from attribution_methods import RandomAttributionValues
+from attribution_methods import RandomAttributionValues, KernelShap, Lime, HillClimber
 from baselines import ZeroBaselineFactory
 from cfg import DB_URI, DB_NAME
 from evaluators import ProportionalityEvaluator, DummyAverageEvaluator
@@ -16,7 +16,7 @@ ex.observers.extend([MongoObserver(url=DB_URI, db_name=DB_NAME), FileStorageObse
 
 
 @ex.config
-def base():
+def base_config():
     evaluation = {
         "name": None
     }
@@ -41,7 +41,7 @@ def base():
 
 
 @ex.named_config
-def random_attributions():
+def random_config():
     evaluation = {
         "name": "proportionality",
         "baseline_factory": "zero"
@@ -52,10 +52,94 @@ def random_attributions():
     }
     dataset = {
         'path': "data/imdb-distilbert-1000.json",
-        'num_samples': 1000
+        'num_samples': None
     }
     attribution_method = {
         "name": "random-attribution-values",
+    }
+
+
+@ex.named_config
+def kernel_shap_config():
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
+    }
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    dataset = {
+        'path': "data/imdb-distilbert-1000.json",
+        'num_samples': None
+    }
+    attribution_method = {
+        "name": "kernel-shap",
+    }
+
+
+@ex.named_config
+def lime_config():
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
+    }
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    dataset = {
+        'path': "data/imdb-distilbert-1000.json",
+        'num_samples': None
+    }
+    attribution_method = {
+        "name": "lime",
+    }
+
+
+@ex.named_config
+def custom_hill_climber_tpn_config():
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
+    }
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    dataset = {
+        'path': "data/imdb-distilbert-1000.json",
+        'num_samples': 2
+    }
+    attribution_method = {
+        "name": "custom-hill-climber",
+        "objective": "tpn",
+        "bounds": (.4, .5),
+        "iterations": 50,
+        "step_size": .1,
+    }
+
+
+@ex.named_config
+def custom_hill_climber_tps_config():
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
+    }
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    dataset = {
+        'path': "data/imdb-distilbert-1000.json",
+        'num_samples': 2
+    }
+    attribution_method = {
+        "name": "custom-hill-climber",
+        "objective": "tps",
+        "bounds": (.4, .5),
+        "iterations": 50,
+        "step_size": .1,
     }
 
 
@@ -69,7 +153,7 @@ def dummy_config():
     }
     dataset = {
         'path': "data/imdb-distilbert-1000.json",
-        'num_samples': 1000
+        'num_samples': None
     }
 
 
@@ -102,6 +186,24 @@ def run_experiment(name: str, dataset: dict, model: dict, attribution_method: di
 
     if attribution_method["name"] == "random-attribution-values":
         attribution_method = RandomAttributionValues()
+    elif attribution_method["name"] == "kernel-shap":
+        attribution_method = KernelShap(model=model)
+    elif attribution_method["name"] == "lime":
+        attribution_method = Lime(model=model)
+    elif attribution_method["name"] == "custom-hill-climber":
+        bounds = attribution_method["bounds"]
+        iterations = attribution_method["iterations"]
+        step_size = attribution_method["step_size"]
+        if attribution_method["objective"] == "tpn":
+            objective = lambda observation, candidate: evaluator.compute_tpn(observation=observation, attribution_values=candidate)
+        elif attribution_method["objective"] == "tps":
+            objective = lambda observation, candidate: evaluator.compute_tps(observation=observation, attribution_values=candidate)
+        else:
+            raise ValueError(f"Hill Climbing Objective string '{attribution_method['objective']}' not supported.")
+        attribution_method = HillClimber(bounds=bounds,
+                                         iterations=iterations,
+                                         step_size=step_size,
+                                         objective=objective)
 
     runner = ExperimentRunner(name=name,
                               num_samples=num_samples,

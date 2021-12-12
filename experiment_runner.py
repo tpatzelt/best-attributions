@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from typing import List
 
@@ -8,6 +9,7 @@ from scipy.special import softmax
 from tqdm import tqdm
 
 from attribution_methods import AttributionMethod
+from cfg import DATA_PATH
 from evaluators import Evaluator
 
 
@@ -18,8 +20,8 @@ class ExperimentRunner:
                  attribution_method: AttributionMethod,
                  dataset: List[dict],
                  evaluator: Evaluator,
-                 experiment: Experiment,
-                 softmax_attributions: bool):
+                 softmax_attributions: bool,
+                 experiment: Experiment = None):
         self.name = name
         self.num_samples = num_samples
         self.attribution_method = attribution_method
@@ -39,12 +41,14 @@ class ExperimentRunner:
 
             result = self.evaluator.evaluate(observation=observation,
                                              attribution_values=attribution)
-            for name, value in result.items():
-                self.experiment.log_scalar(name=name, value=value)
+            if self.experiment:
+                for name, value in result.items():
+                    self.experiment.log_scalar(name=name, value=value)
 
-        attribution_path = f"data/{time.strftime('%Y-%d-%m_%H%M')}-" \
-                           f"{self.name}.json"
+        attribution_path = str(os.path.join(DATA_PATH, f"{time.strftime('%Y-%d-%m_%H%M')}-"
+                                                       f"{self.name}.json"))
         with open(attribution_path, "w") as fp:
             json.dump(attributions, fp)
 
-        self.experiment.add_artifact(attribution_path)
+        if self.experiment:
+            self.experiment.add_artifact(attribution_path)
