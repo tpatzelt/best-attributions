@@ -2,17 +2,18 @@ import json
 from pathlib import Path
 
 from sacred import Experiment
-from sacred.observers import MongoObserver, FileStorageObserver
+from sacred.observers import FileStorageObserver
 
 from attribution_methods import RandomAttributionValues, KernelShap, Lime, HillClimber
 from baselines import ZeroBaselineFactory
-from cfg import DB_URI, DB_NAME
 from evaluators import ProportionalityEvaluator, DummyAverageEvaluator
 from experiment_runner import ExperimentRunner
 from models import load_distilbert
 
 ex = Experiment()
-ex.observers.extend([MongoObserver(url=DB_URI, db_name=DB_NAME), FileStorageObserver("./logs")])
+ex.observers.extend([
+    # MongoObserver(url=DB_URI, db_name=DB_NAME),
+    FileStorageObserver("./logs")])
 
 
 @ex.config
@@ -45,6 +46,10 @@ def random_config():
     evaluation = {
         "name": "proportionality",
         "baseline_factory": "zero"
+    }
+    dataset = {
+        'path': "data/imdb-distilbert-first-1000.json",
+        'num_samples': None
     }
     model = {
         'name': 'distilbert',
