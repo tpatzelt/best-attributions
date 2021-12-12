@@ -1,9 +1,16 @@
-import numpy as np
 import abc
+from typing import Callable
+
+import captum.attr
+import numpy as np
+import torch
+from captum.attr import KernelShap as CaptumKernelShap, Lime as CaptumLime
+
 
 class AttributionMethod(abc.ABC):
     def get_attribution_values(self, observation: np.array):
         raise NotImplementedError
+
 
 class RandomAttributionValues(AttributionMethod):
     def get_attribution_values(self, observation: np.array):
@@ -22,7 +29,7 @@ class HillClimber(AttributionMethod):
         # generate an initial point
         solution = bounds[:, 0] + np.random.rand(len(bounds)) * (bounds[:, 1] - bounds[:, 0])
         # evaluate the initial point
-        solution_eval = self.objective(solution)
+        solution_eval = self.objective(observation, solution)
         # run the hill climb
         solutions = list()
         solutions.append(solution)
@@ -30,7 +37,7 @@ class HillClimber(AttributionMethod):
             # take a step
             candidate = solution + np.random.randn(len(bounds)) * self.step_size
             # evaluate candidate point
-            candidate_eval = self.objective(candidate)
+            candidate_eval = self.objective(observation, candidate)
             if candidate_eval is None:
                 continue
             # check if we should keep the new point
@@ -41,4 +48,31 @@ class HillClimber(AttributionMethod):
                 solutions.append(solution)
                 # report progress
                 # print('>%d = %.5f' % (i, solution_eval))
-        return (solution, solution_eval, solutions)
+        # return (solution, solution_eval, solutions)
+        return solution
+
+
+class CaptumAttributionMethod(AttributionMethod):
+    method: captum.attr.Attribution
+
+    def __init__(self, model: Callable):
+        self.model = model
+        forward_func = lambda x: torch.tensor(model(x.squeeze().numpy())[None])
+        if self.method:
+            self.method = self.method(forward_func=forward_func)
+        else:
+            raise RuntimeError("Don't use CaptumAttributionMethod directly.")
+
+    def get_attribution_values(self, observation: np.array):
+        target_class = torch.tensor(np.argmax(self.model(observation)))
+        observation = torch.tensor(observation[None]).long()
+        attribution = self.method.attribute(observation, target=target_class)
+        return attribution[0].detach().numpy()
+
+
+class KernelShap(CaptumAttributionMethod):
+    method = CaptumKernelShap
+
+
+class Lime(CaptumAttributionMethod):
+    method = CaptumLime
