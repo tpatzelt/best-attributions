@@ -33,7 +33,7 @@ class ExperimentRunner:
     def run(self):
         attributions = []
         for sample in tqdm(self.dataset[:self.num_samples]):
-            observation = np.asarray(sample["input_ids"])
+            observation = np.asarray(sample["input_ids"][:512])
             attribution = self.attribution_method.get_attribution_values(observation=observation)
             if self.softmax_attributions:
                 attribution = softmax(attribution)
