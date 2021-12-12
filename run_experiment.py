@@ -21,7 +21,7 @@ def base_config():
         "name": None
     }
     dataset = {
-        'path': None,
+        'path': "data/imdb-distilbert-first-1000.json",
         'num_samples': None
     }
     model = {
@@ -50,10 +50,6 @@ def random_config():
         'name': 'distilbert',
         'quantized': True
     }
-    dataset = {
-        'path': "data/imdb-distilbert-1000.json",
-        'num_samples': None
-    }
     attribution_method = {
         "name": "random-attribution-values",
     }
@@ -68,10 +64,6 @@ def kernel_shap_config():
     model = {
         'name': 'distilbert',
         'quantized': True
-    }
-    dataset = {
-        'path': "data/imdb-distilbert-1000.json",
-        'num_samples': None
     }
     attribution_method = {
         "name": "kernel-shap",
@@ -88,10 +80,6 @@ def lime_config():
         'name': 'distilbert',
         'quantized': True
     }
-    dataset = {
-        'path': "data/imdb-distilbert-1000.json",
-        'num_samples': None
-    }
     attribution_method = {
         "name": "lime",
     }
@@ -106,10 +94,6 @@ def custom_hill_climber_tpn_config():
     model = {
         'name': 'distilbert',
         'quantized': True
-    }
-    dataset = {
-        'path': "data/imdb-distilbert-1000.json",
-        'num_samples': None
     }
     attribution_method = {
         "name": "custom-hill-climber",
@@ -130,10 +114,6 @@ def custom_hill_climber_tps_config():
         'name': 'distilbert',
         'quantized': True
     }
-    dataset = {
-        'path': "data/imdb-distilbert-1000.json",
-        'num_samples': None
-    }
     attribution_method = {
         "name": "custom-hill-climber",
         "objective": "tps",
@@ -150,10 +130,6 @@ def dummy_config():
     }
     attribution_method = {
         "name": "random-attribution-values",
-    }
-    dataset = {
-        'path': "data/imdb-distilbert-1000.json",
-        'num_samples': None
     }
 
 
