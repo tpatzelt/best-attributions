@@ -30,7 +30,7 @@ def base_config():
     attribution_method = {
         "name": None
     }
-    softmax_attributions = True
+    softmax_attributions = False
     try:
         name = "-".join([str(name) if name else "None" for name in
                          [attribution_method["name"], model["name"], Path(dataset["path"]).stem,
@@ -109,7 +109,7 @@ def custom_hill_climber_tpn_config():
     }
     dataset = {
         'path': "data/imdb-distilbert-1000.json",
-        'num_samples': 2
+        'num_samples': None
     }
     attribution_method = {
         "name": "custom-hill-climber",
@@ -132,7 +132,7 @@ def custom_hill_climber_tps_config():
     }
     dataset = {
         'path': "data/imdb-distilbert-1000.json",
-        'num_samples': 2
+        'num_samples': None
     }
     attribution_method = {
         "name": "custom-hill-climber",
