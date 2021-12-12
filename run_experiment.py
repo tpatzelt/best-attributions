@@ -47,10 +47,6 @@ def random_config():
         "name": "proportionality",
         "baseline_factory": "zero"
     }
-    dataset = {
-        'path': "data/imdb-distilbert-first-1000.json",
-        'num_samples': None
-    }
     model = {
         'name': 'distilbert',
         'quantized': True
