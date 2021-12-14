@@ -4,7 +4,7 @@ from pathlib import Path
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
-from attribution_methods import RandomAttributionValues, KernelShap, Lime, HillClimber
+from attribution_methods import RandomAttributionValues, KernelShap, Lime, HillClimber, NGOpt
 from baselines import ZeroBaselineFactory
 from evaluators import ProportionalityEvaluator, DummyAverageEvaluator
 from experiment_runner import ExperimentRunner
@@ -72,6 +72,49 @@ def kernel_shap_config():
 
 
 @ex.named_config
+def ngopt_tpn_config():
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
+    }
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    attribution_method = {
+        "name": "ngopt",
+        'none_penalty': 10,
+        'upper': 5,
+        'lower': 0,
+        'sigma': 1,
+        'budget': 3,
+        'objective': 'tpn'
+    }
+    only_first_sentence = False
+
+@ex.named_config
+def ngopt_tps_config():
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
+    }
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    attribution_method = {
+        "name": "ngopt",
+        'none_penalty': 10,
+        'upper': 5,
+        'lower': 0,
+        'sigma': 1,
+        'budget': 3,
+        'objective': 'tps'
+    }
+    only_first_sentence = False
+
+
+@ex.named_config
 def lime_config():
     evaluation = {
         "name": "proportionality",
@@ -135,7 +178,7 @@ def dummy_config():
 
 
 @ex.automain
-def run_experiment(name: str, dataset: dict, model: dict, attribution_method: dict, evaluation: dict, softmax_attributions: bool):
+def run_experiment(name: str, dataset: dict, model: dict, attribution_method: dict, evaluation: dict, softmax_attributions: bool, only_first_sentence: bool):
     num_samples = dataset["num_samples"]
     with open(dataset["path"], "r") as fp:
         dataset = json.load(fp)
@@ -181,6 +224,29 @@ def run_experiment(name: str, dataset: dict, model: dict, attribution_method: di
                                          iterations=iterations,
                                          step_size=step_size,
                                          objective=objective)
+    elif attribution_method['name'] == 'ngopt':
+        if attribution_method["objective"] == "tpn":
+            objective = lambda observation, candidate: evaluator.compute_tpn(observation=observation, attribution_values=candidate)
+        elif attribution_method["objective"] == "tps":
+            objective = lambda observation, candidate: evaluator.compute_tps(observation=observation, attribution_values=candidate)
+        else:
+            raise ValueError(f"Hill Climbing Objective string '{attribution_method['objective']}' not supported.")
+        attribution_method = NGOpt(
+            none_penalty=attribution_method['none_penalty'],
+            upper=attribution_method['upper'],
+            lower=attribution_method['lower'],
+            budget=attribution_method['budget'],
+            sigma=attribution_method['sigma'],
+            objective=objective
+        )
+    if only_first_sentence:
+        for observation in dataset:
+            for i, token in enumerate(observation['tokens']):
+                if '.' in token:
+                    observation['input_ids'] = observation['input_ids'][:i]
+                    observation['attention_mask'] = observation['attention_mask'][:]
+                    observation['tokens'] = observation['tokens'][:]
+                    break
 
     runner = ExperimentRunner(name=name,
                               num_samples=num_samples,

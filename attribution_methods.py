@@ -5,12 +5,38 @@ import captum.attr
 import numpy as np
 import torch
 from captum.attr import KernelShap as CaptumKernelShap, Lime as CaptumLime
+import nevergrad as ng
+from concurrent import futures
 
 
 class AttributionMethod(abc.ABC):
     def get_attribution_values(self, observation: np.array):
         raise NotImplementedError
 
+class NGOpt(AttributionMethod):
+    def __init__(self, objective, none_penalty: float, lower:float, upper:float, sigma:float, budget:int):
+        self.objective = objective
+        self.none_penalty = none_penalty
+        self.lower = lower
+        self.upper = upper
+        self.sigma = sigma
+        self.budget = budget
+
+    def get_attribution_values(self, observation: np.array):
+        def objective(candidate):
+            res = self.objective(observation, candidate)
+            if res is None:
+                return 10  # float("inf")
+            return res
+
+        param = ng.p.Array(shape=observation.shape)
+        param.set_bounds(lower=self.lower, upper=self.upper)
+        param.set_mutation(sigma=self.sigma)
+
+        optimizer = ng.optimizers.NGOpt(parametrization=param, budget=self.budget, num_workers=4)
+        with futures.ThreadPoolExecutor(max_workers=optimizer.num_workers) as executor:
+            recommendation = optimizer.minimize(objective, executor=executor, batch_mode=False)
+        return recommendation.value
 
 class RandomAttributionValues(AttributionMethod):
     def get_attribution_values(self, observation: np.array):
