@@ -2,10 +2,11 @@ import json
 from pathlib import Path
 
 from sacred import Experiment
-from sacred.observers import FileStorageObserver
+from sacred.observers import FileStorageObserver, MongoObserver
 
 from attribution_methods import RandomAttributionValues, KernelShap, Lime, HillClimber, NGOpt
 from baselines import ZeroBaselineFactory
+from cfg import DB_URI, DB_NAME
 from evaluators import ProportionalityEvaluator, DummyAverageEvaluator
 from experiment_runner import ExperimentRunner
 from models import load_distilbert
@@ -32,6 +33,7 @@ def base_config():
         "name": None
     }
     apply_softmax_to_attributions = False
+    dev_mode = True
     try:
         name = "-".join([str(name) if name else "None" for name in
                          [attribution_method["name"], model["name"], Path(dataset["path"]).stem,
@@ -178,7 +180,13 @@ def dummy_config():
 
 
 @ex.automain
-def run_experiment(name: str, dataset: dict, model: dict, attribution_method: dict, evaluation: dict, softmax_attributions: bool, only_first_sentence: bool):
+def run_experiment(name: str, dataset: dict,
+                   model: dict, attribution_method: dict,
+                   evaluation: dict, softmax_attributions: bool,
+                   dev_mode: bool,  only_first_sentence: bool):
+    if not dev_mode:
+        ex.observers.append(MongoObserver(url=DB_URI, db_name=DB_NAME))
+
     num_samples = dataset["num_samples"]
     with open(dataset["path"], "r") as fp:
         dataset = json.load(fp)
