@@ -1,0 +1,20 @@
+{
+  "attribution_method": {
+    "name": "random-attribution-values"
+  },
+  "dataset": {
+    "num_samples": null,
+    "path": "data/imdb-distilbert-first-1000.json"
+  },
+  "evaluation": {
+    "baseline_factory": "zero",
+    "name": "proportionality"
+  },
+  "model": {
+    "name": "distilbert",
+    "quantized": true
+  },
+  "name": "random-attribution-values-distilbert-imdb-distilbert-first-1000-proportionality-False",
+  "seed": 407050400,
+  "softmax_attributions": false
+}

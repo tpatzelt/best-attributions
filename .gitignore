@@ -133,4 +133,4 @@ dmypy.json
 .idea/
 
 foo/
-# logs/
+logs/

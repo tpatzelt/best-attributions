@@ -1,0 +1,27 @@
+{
+  "attribution_method": {
+    "budget": 3,
+    "lower": 0,
+    "name": "ngopt-tpn",
+    "none_penalty": 10,
+    "objective": "tpn",
+    "sigma": 1,
+    "upper": 5
+  },
+  "dataset": {
+    "num_samples": null,
+    "path": "data/imdb-distilbert-first-1000.json"
+  },
+  "evaluation": {
+    "baseline_factory": "zero",
+    "name": "proportionality"
+  },
+  "model": {
+    "name": "distilbert",
+    "quantized": true
+  },
+  "name": "ngopt-distilbert-imdb-distilbert-first-1000-proportionality-False",
+  "only_first_sentence": false,
+  "seed": 469067169,
+  "softmax_attributions": false
+}
