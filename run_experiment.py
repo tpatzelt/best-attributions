@@ -31,11 +31,11 @@ def base_config():
     attribution_method = {
         "name": None
     }
-    softmax_attributions = False
+    apply_softmax_to_attributions = False
     try:
         name = "-".join([str(name) if name else "None" for name in
                          [attribution_method["name"], model["name"], Path(dataset["path"]).stem,
-                          evaluation["name"], str(softmax_attributions)]]
+                          evaluation["name"], str(apply_softmax_to_attributions)]]
                         )
     except TypeError:
         raise TypeError("Experiment cannot run in 'base' mode.")
