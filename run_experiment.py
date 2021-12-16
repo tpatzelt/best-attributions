@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 from sacred import Experiment
@@ -11,10 +12,15 @@ from evaluators import ProportionalityEvaluator, DummyAverageEvaluator
 from experiment_runner import ExperimentRunner
 from models import load_distilbert
 
+if os.environ["MONGO_OBSERVER"]:
+    observers = [
+        MongoObserver(url=DB_URI, db_name=DB_NAME),
+        FileStorageObserver("./logs")]
+else:
+    observers = [FileStorageObserver("./logs")]
+
 ex = Experiment()
-ex.observers.extend([
-    # MongoObserver(url=DB_URI, db_name=DB_NAME),
-    FileStorageObserver("./logs")])
+ex.observers.extend(observers)
 
 
 @ex.config
@@ -34,7 +40,6 @@ def base_config():
     }
     apply_softmax_to_attributions = False
     only_first_sentence = False
-    dev_mode = True
     try:
         name = "-".join([str(name) if name else "None" for name in
                          [attribution_method["name"], model["name"], Path(dataset["path"]).stem,
@@ -94,6 +99,7 @@ def ngopt_tpn_config():
         'objective': 'tpn'
     }
     only_first_sentence = False
+
 
 @ex.named_config
 def ngopt_tps_config():
@@ -184,10 +190,7 @@ def dummy_config():
 def run_experiment(name: str, dataset: dict,
                    model: dict, attribution_method: dict,
                    evaluation: dict, apply_softmax_to_attributions: bool,
-                   dev_mode: bool, only_first_sentence: bool):
-    if not dev_mode:
-        ex.observers.append(MongoObserver(url=DB_URI, db_name=DB_NAME))
-
+                   only_first_sentence: bool):
     num_samples = dataset["num_samples"]
     with open(dataset["path"], "r") as fp:
         dataset = json.load(fp)
