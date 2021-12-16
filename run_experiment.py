@@ -33,6 +33,7 @@ def base_config():
         "name": None
     }
     apply_softmax_to_attributions = False
+    only_first_sentence = False
     dev_mode = True
     try:
         name = "-".join([str(name) if name else "None" for name in
@@ -182,8 +183,8 @@ def dummy_config():
 @ex.automain
 def run_experiment(name: str, dataset: dict,
                    model: dict, attribution_method: dict,
-                   evaluation: dict, softmax_attributions: bool,
-                   dev_mode: bool,  only_first_sentence: bool):
+                   evaluation: dict, apply_softmax_to_attributions: bool,
+                   dev_mode: bool, only_first_sentence: bool):
     if not dev_mode:
         ex.observers.append(MongoObserver(url=DB_URI, db_name=DB_NAME))
 
@@ -252,8 +253,8 @@ def run_experiment(name: str, dataset: dict,
             for i, token in enumerate(observation['tokens']):
                 if '.' in token:
                     observation['input_ids'] = observation['input_ids'][:i]
-                    observation['attention_mask'] = observation['attention_mask'][:]
-                    observation['tokens'] = observation['tokens'][:]
+                    observation['attention_mask'] = observation['attention_mask'][:i]
+                    observation['tokens'] = observation['tokens'][:i]
                     break
 
     runner = ExperimentRunner(name=name,
@@ -262,5 +263,5 @@ def run_experiment(name: str, dataset: dict,
                               dataset=dataset,
                               evaluator=evaluator,
                               experiment=ex,
-                              softmax_attributions=softmax_attributions)
+                              softmax_attributions=apply_softmax_to_attributions)
     runner.run()
