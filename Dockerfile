@@ -4,7 +4,7 @@ FROM python:3.9-slim-buster
 RUN apt update && apt install -y \
     nano \
     git \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/tpatzelt/best-attributions.git
 WORKDIR /best-attributions/
