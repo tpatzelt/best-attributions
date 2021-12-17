@@ -12,7 +12,7 @@ from evaluators import ProportionalityEvaluator, DummyAverageEvaluator
 from experiment_runner import ExperimentRunner
 from models import load_distilbert
 
-if os.environ["MONGO_OBSERVER"]:
+if "MONGO_OBSERVER" in os.environ:
     observers = [
         MongoObserver(url=DB_URI, db_name=DB_NAME),
         FileStorageObserver("./logs")]
