@@ -1,12 +1,12 @@
 import abc
+from concurrent import futures
 from typing import Callable
 
 import captum.attr
+import nevergrad as ng
 import numpy as np
 import torch
 from captum.attr import KernelShap as CaptumKernelShap, Lime as CaptumLime
-import nevergrad as ng
-from concurrent import futures
 
 
 class AttributionMethod(abc.ABC):
@@ -79,7 +79,7 @@ class HillClimber(AttributionMethod):
 
 
 class CaptumAttributionMethod(AttributionMethod):
-    method: captum.attr.Attribution
+    method: type(captum.attr.Attribution)
 
     def __init__(self, model: Callable):
         self.model = model

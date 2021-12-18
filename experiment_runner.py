@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from pathlib import Path
 from typing import List
 
 import numpy as np
@@ -32,11 +33,15 @@ class ExperimentRunner:
 
     def run(self):
         attributions = []
-        for sample in tqdm(self.dataset[:self.num_samples]):
+        for i, sample in tqdm(enumerate(self.dataset)):
+            if i == self.num_samples:
+                print(f"Reached max num_samples {self.num_samples}.")
+                break
             observation = np.asarray(sample["observation"])
             attribution = self.attribution_method.get_attribution_values(observation=observation)
             if self.softmax_attributions:
                 attribution = softmax(attribution)
+            attribution = attribution.astype(np.half)
             attributions.append(dict(idx=sample['idx'], attribution_values=attribution.tolist()))
 
             result = self.evaluator.evaluate(observation=observation,
@@ -52,3 +57,4 @@ class ExperimentRunner:
 
         if self.experiment:
             self.experiment.add_artifact(attribution_path)
+        Path(attribution_path).unlink()
