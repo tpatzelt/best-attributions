@@ -1,6 +1,4 @@
-import json
 import os
-from pathlib import Path
 
 import numpy as np
 from sacred import Experiment
@@ -9,6 +7,7 @@ from sacred.observers import FileStorageObserver, MongoObserver
 from attribution_methods import RandomAttributionValues, KernelShap, Lime, HillClimber, NGOpt
 from baselines import ZeroBaselineFactory
 from cfg import DB_URI, DB_NAME
+from datasets import load_imdb_distilbert_first_1000
 from evaluators import ProportionalityEvaluator, DummyAverageEvaluator
 from experiment_runner import ExperimentRunner
 from models import load_distilbert
@@ -30,7 +29,7 @@ def base_config():
         "name": None
     }
     dataset = {
-        'path': "data/imdb-distilbert-first-1000.json",
+        'name': "imdb-distilbert-first-1000",
         'num_samples': 500
     }
     model = {
@@ -43,8 +42,8 @@ def base_config():
     only_first_sentence = False
     try:
         name = "-".join([str(name) if name else "None" for name in
-                         [attribution_method["name"], model["name"], Path(dataset["path"]).stem,
-                          evaluation["name"], str(apply_softmax_to_attributions)]]
+                         [attribution_method["name"], model["name"], dataset["name"],
+                          evaluation["name"]]]
                         )
     except TypeError:
         raise TypeError("Experiment cannot run in 'base' mode.")
@@ -230,8 +229,8 @@ def run_experiment(name: str, dataset: dict,
                    evaluation: dict, apply_softmax_to_attributions: bool,
                    only_first_sentence: bool):
     num_samples = dataset["num_samples"]
-    with open(dataset["path"], "r") as fp:
-        dataset = json.load(fp)
+    if dataset["name"] == "imdb-distilbert-first-1000":
+        dataset = load_imdb_distilbert_first_1000()
 
     if model["name"] == "distilbert":
         if model["quantized"]:
@@ -302,7 +301,7 @@ def run_experiment(name: str, dataset: dict,
         for observation in dataset:
             for i, token in enumerate(observation['tokens']):
                 if '.' in token:
-                    observation['input_ids'] = observation['input_ids'][:i]
+                    observation['observation'] = observation['observation'][:i]
                     observation['attention_mask'] = observation['attention_mask'][:i]
                     observation['tokens'] = observation['tokens'][:i]
                     break
