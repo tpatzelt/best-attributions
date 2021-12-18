@@ -13,4 +13,4 @@ WORKDIR /best-attributions/
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 ## test run
-RUN python run_experiment.py with random_config dataset.num_samples=2
+RUN python run_experiment.py with dummy_config dataset.num_samples=2

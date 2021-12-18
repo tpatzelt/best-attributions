@@ -132,7 +132,7 @@ https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619
     def compute_tpn(self, observation, attribution_values, saliency_ratio_per_step=.2):
         masks_ratios = list(
             ProportionalityEvaluator.iterate_masks_saliency_ratio(
-                attribution_values=attribution_values,
+                attribution_values=attribution_values.copy(),
                 saliency_ratio_per_step=saliency_ratio_per_step))
         tpn_score = self._get_proportionality_value(observation=observation,
                                                     masks_ratios=masks_ratios)
@@ -141,7 +141,7 @@ https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619
     def compute_tps(self, observation, attribution_values, saliency_ratio_per_step=.2):
         masks_ratios = list(
             ProportionalityEvaluator.iterate_masks_saliency_ratio(
-                attribution_values=attribution_values,
+                attribution_values=attribution_values.copy(),
                 reverse=True,
                 saliency_ratio_per_step=saliency_ratio_per_step))
         tps_score = self._get_proportionality_value(observation=observation,

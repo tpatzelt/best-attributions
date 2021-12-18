@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+import numpy as np
 from sacred import Experiment
 from sacred.observers import FileStorageObserver, MongoObserver
 
@@ -30,7 +31,7 @@ def base_config():
     }
     dataset = {
         'path': "data/imdb-distilbert-first-1000.json",
-        'num_samples': None
+        'num_samples': 500
     }
     model = {
         'name': None,
@@ -98,7 +99,6 @@ def ngopt_tpn_config():
         'budget': 3,
         'objective': 'tpn'
     }
-    only_first_sentence = False
 
 
 @ex.named_config
@@ -120,7 +120,6 @@ def ngopt_tps_config():
         'budget': 3,
         'objective': 'tps'
     }
-    only_first_sentence = False
 
 
 @ex.named_config
@@ -170,6 +169,25 @@ def custom_hill_climber_tps_config():
     attribution_method = {
         "name": "custom-hill-climber",
         "objective": "tps",
+        "bounds": (.4, .5),
+        "iterations": 50,
+        "step_size": .1,
+    }
+
+
+@ex.named_config
+def custom_hill_climber_tpn_tps_config():
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
+    }
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    attribution_method = {
+        "name": "custom-hill-climber",
+        "objective": "tpn+tps",
         "bounds": (.4, .5),
         "iterations": 50,
         "step_size": .1,
@@ -230,6 +248,10 @@ def run_experiment(name: str, dataset: dict,
             objective = lambda observation, candidate: evaluator.compute_tpn(observation=observation, attribution_values=candidate)
         elif attribution_method["objective"] == "tps":
             objective = lambda observation, candidate: evaluator.compute_tps(observation=observation, attribution_values=candidate)
+        elif attribution_method["objective"] == "tpn+tps":
+            objective1 = lambda observation, candidate: evaluator.compute_tpn(observation=observation, attribution_values=candidate)
+            objective2 = lambda observation, candidate: evaluator.compute_tps(observation=observation, attribution_values=candidate)
+            objective = lambda observation, candidate: np.mean([objective1(observation, candidate), objective2(observation, candidate)])
         else:
             raise ValueError(f"Hill Climbing Objective string '{attribution_method['objective']}' not supported.")
         attribution_method = HillClimber(bounds=bounds,
