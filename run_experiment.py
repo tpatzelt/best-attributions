@@ -95,8 +95,8 @@ def ngopt_tpn_config():
         'none_penalty': 10,
         'upper': 5,
         'lower': 0,
-        'sigma': 1,
-        'budget': 3,
+        'sigma': .2,
+        'budget': 150,
         'objective': 'tpn'
     }
 
@@ -116,11 +116,31 @@ def ngopt_tps_config():
         'none_penalty': 10,
         'upper': 5,
         'lower': 0,
-        'sigma': 1,
-        'budget': 3,
+        'sigma': .2,
+        'budget': 150,
         'objective': 'tps'
     }
 
+
+@ex.named_config
+def ngopt_tpn_tps_config():
+    evaluation = {
+        "name": "proportionality",
+        "baseline_factory": "zero"
+    }
+    model = {
+        'name': 'distilbert',
+        'quantized': True
+    }
+    attribution_method = {
+        "name": "ngopt",
+        'none_penalty': 10,
+        'upper': 5,
+        'lower': 0,
+        'sigma': .2,
+        'budget': 150,
+        'objective': 'tpn+tps'
+    }
 
 @ex.named_config
 def lime_config():
@@ -263,6 +283,11 @@ def run_experiment(name: str, dataset: dict,
             objective = lambda observation, candidate: evaluator.compute_tpn(observation=observation, attribution_values=candidate)
         elif attribution_method["objective"] == "tps":
             objective = lambda observation, candidate: evaluator.compute_tps(observation=observation, attribution_values=candidate)
+        elif attribution_method["objective"] == "tpn+tps":
+            objective1 = lambda observation, candidate: evaluator.compute_tpn(observation=observation, attribution_values=candidate)
+            objective2 = lambda observation, candidate: evaluator.compute_tps(observation=observation, attribution_values=candidate)
+            objective = lambda observation, candidate: np.mean([objective1(observation, candidate), objective2(observation, candidate)])
+
         else:
             raise ValueError(f"Hill Climbing Objective string '{attribution_method['objective']}' not supported.")
         attribution_method = NGOpt(
