@@ -44,4 +44,6 @@ def load_imagenet_vgg16_1000():
         img = plt.imread(str(path), format="jpeg")
         img = img.astype(float)
         norm_img = normalize(img).astype(np.half)
+        print(norm_img.shape)
+        norm_img = np.resize(norm_img, (3, 30, 30))
         yield dict(idx=i, observation=norm_img.tolist())

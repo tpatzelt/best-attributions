@@ -48,4 +48,5 @@ def load_distilbert(return_softmax=1, from_notebook=0) -> Callable:
 
 
 def load_vgg16():
-    return vgg16(pretrained=True).eval()
+    model = vgg16(pretrained=True).eval()
+    return lambda x: model(torch.tensor(x[None], dtype=torch.double))
