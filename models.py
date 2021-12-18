@@ -4,6 +4,7 @@ import numpy as np
 import onnxruntime as ort
 import torch
 from scipy.special import softmax
+from torchvision.models.vgg import vgg16
 from transformers import AutoModelForSequenceClassification
 
 
@@ -44,3 +45,7 @@ def load_distilbert(return_softmax=1, from_notebook=0) -> Callable:
         return lambda x: ort_session.run(["output_0"],
                                          dict(input_ids=x[None],
                                               attention_mask=np.ones_like(x[None])))[0][0]
+
+
+def load_vgg16():
+    return vgg16(pretrained=True).eval()
