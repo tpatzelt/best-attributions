@@ -7,7 +7,7 @@ from sacred.observers import FileStorageObserver, MongoObserver
 from attribution_methods import RandomAttributionValues, KernelShap, Lime, HillClimber, NGOpt
 from baselines import ZeroBaselineFactory
 from cfg import DB_URI, DB_NAME
-from datasets import load_imdb_distilbert_first_1000
+from dataset import load_imdb_distilbert_first_1000
 from evaluators import ProportionalityEvaluator, DummyAverageEvaluator
 from experiment_runner import ExperimentRunner
 from models import load_distilbert
