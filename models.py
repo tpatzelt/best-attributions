@@ -49,4 +49,13 @@ def load_distilbert(return_softmax=1, from_notebook=0) -> Callable:
 
 def load_vgg16():
     model = vgg16(pretrained=True).eval()
-    return lambda x: model(torch.tensor(x[None], dtype=torch.double))
+
+    def call_vgg(observation: np.array):
+        observation = observation[None]
+        observation = observation.swapaxes(-1, 1).swapaxes(2, 3)
+        observation = torch.tensor(observation, dtype=torch.float)
+        out = model(observation)
+        # out = np.swapaxes(np.swapaxes(out, 2, 3), 1, -1)
+        return out.squeeze().detach().numpy()
+
+    return lambda x: call_vgg(observation=x)

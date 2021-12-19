@@ -41,8 +41,8 @@ class ExperimentRunner:
             attribution = self.attribution_method.get_attribution_values(observation=observation)
             if self.softmax_attributions:
                 attribution = softmax(attribution)
-            attribution = attribution.astype(np.half)
-            attributions.append(dict(idx=sample['idx'], attribution_values=attribution.tolist()))
+            attributions.append(
+                dict(idx=sample['idx'], attribution_values=attribution.astype(np.half).tolist()))
 
             result = self.evaluator.evaluate(observation=observation,
                                              attribution_values=attribution)

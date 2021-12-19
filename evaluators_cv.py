@@ -3,9 +3,10 @@ Functionality for the total proportionality ablation evaluation.
 
 Reference: https://arxiv.org/abs/2002.07985
 """
-from typing import List, Tuple, Generator
+from typing import Tuple, Generator, Iterable
 
 import numpy as np
+import torch
 from numpy import ma
 from numpy.typing import NDArray
 from sklearn.metrics import auc
@@ -24,8 +25,8 @@ class ProportionalityEvaluator(Evaluator):
         Sorts x and returns an index in ascending order.
 
         Each element is a tuple that corresponds to a location in x.
-        x[sorted_index(x)[k] returns the k-th largest value in the array.
-https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619345&notif_id=1638259397597864&notif_t=group_highlights&ref=notif
+        x[sorted_index(x)[k]] returns the k-th lowest value in the array.
+
         :param x: Multi-dimensional array to be indexed.
         :return: List of indices in ascending order.
         """
@@ -81,7 +82,7 @@ https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619
 
     def _get_proportionality_value(self,
                                    observation: NDArray,
-                                   masks_ratios: List[Tuple[NDArray, float]],
+                                   masks_ratios: Iterable[Tuple[NDArray, float]],  # Generator[Tuple[NDArray, float]]],
                                    ) -> float:
         """
         Calculates the total proportionality for a set of masks and their ratios of
@@ -94,16 +95,17 @@ https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619
         :return: The total proportionality value that results from applying the masks and
             calculating the area under the curve
         """
-
-        original_output = np.array(self.model(observation)).squeeze()
+        with torch.no_grad():
+            original_output = self.model(observation)
         predicted_class = np.argmax(original_output)
         baseline_input = self.baseline_factory.apply(mask=np.ones(observation.shape).astype(bool),
                                                      observation=observation)
-        baseline_output = np.array(self.model(baseline_input)).squeeze()
+        with torch.no_grad():
+            baseline_output = self.model(baseline_input)
         baseline_confidence = baseline_output[predicted_class]
-
         # since zip returns a tuple of tuples, we have to convert the tuples to lists
         masks, ratios = (list(t) for t in zip(*masks_ratios))
+        # masks, ratios = zip(*[(m[0].mask, m[1]) for m in masks_ratios])
 
         proportionality_values = []
         ratio_values = []
@@ -123,25 +125,26 @@ https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619
             ratio_values.append(previous_ratio + ratio_normal)
             previous_ratio += ratio_normal
             last_output_value = ablated_prediction_normal
-
         normalizing_factor = 1 / (
-                original_output[predicted_class]
-                * min(1, baseline_confidence / last_output_value)
+                original_output[predicted_class] * min(1, baseline_confidence / last_output_value)
         )
-        return normalizing_factor * auc(
-            x=np.asarray(ratio_values), y=np.asarray(proportionality_values)
-        )
+        try:
+            auc_value = auc(
+                x=np.asarray(ratio_values), y=np.asarray(proportionality_values)
+            )
+        except ValueError:
+            return None
+        return normalizing_factor * auc_value
 
     def compute_tpn(self, observation, attribution_values, saliency_ratio_per_step=.1):
-        masks_ratios = list(
-            ProportionalityEvaluator.iterate_masks_saliency_ratio(
-                attribution_values=attribution_values.copy(),
-                saliency_ratio_per_step=saliency_ratio_per_step))
+        masks_ratios = ProportionalityEvaluator.iterate_masks_saliency_ratio(
+            attribution_values=attribution_values.copy(),
+            saliency_ratio_per_step=saliency_ratio_per_step)
         tpn_score = self._get_proportionality_value(observation=observation,
                                                     masks_ratios=masks_ratios)
         return tpn_score
 
-    def compute_tps(self, observation, attribution_values, saliency_ratio_per_step=.1):
+    def compute_tps(self, observation, attribution_values, saliency_ratio_per_step=.2):
         masks_ratios = list(
             ProportionalityEvaluator.iterate_masks_saliency_ratio(
                 attribution_values=attribution_values.copy(),

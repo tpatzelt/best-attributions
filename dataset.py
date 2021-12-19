@@ -37,13 +37,12 @@ def load_imagenet_vgg16_1000():
             image = grey2rgb(image)
         image = image - mean
         image = image / std
-        image = image[None]
-        return image.swapaxes(-1, 1).swapaxes(2, 3)
+        # image = image[None]
+        # return image.swapaxes(-1, 1).swapaxes(2, 3)
+        return image
 
     for i, path in enumerate(sorted([path for path in path.iterdir() if path.suffix == ".JPEG"])):
         img = plt.imread(str(path), format="jpeg")
         img = img.astype(float)
-        norm_img = normalize(img).astype(np.half)
-        print(norm_img.shape)
-        norm_img = np.resize(norm_img, (3, 30, 30))
+        norm_img = normalize(img)  # .astype(np.half)
         yield dict(idx=i, observation=norm_img.tolist())

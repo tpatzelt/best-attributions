@@ -24,7 +24,7 @@ class ProportionalityEvaluator(Evaluator):
 
         Each element is a tuple that corresponds to a location in x.
         x[sorted_index(x)[k] returns the k-th largest value in the array.
-https://www.facebook.com/groups/1638968383075904/?multi_permalinks=2690200534619345&notif_id=1638259397597864&notif_t=group_highlights&ref=notif
+
         :param x: Multi-dimensional array to be indexed.
         :return: List of indices in ascending order.
         """
