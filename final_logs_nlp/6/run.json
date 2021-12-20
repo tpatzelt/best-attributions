@@ -1,0 +1,96 @@
+{
+  "start_time": "2021-12-18T13:18:58",
+  "info": {
+    "metrics": [
+      {
+        "name": "tpn",
+        "id": "61bde04f583f07edec866d82"
+      },
+      {
+        "name": "tps",
+        "id": "61bde04f583f07edec866d8d"
+      }
+    ]
+  },
+  "resources": [],
+  "omniboard": {
+    "tags": [],
+    "notes": "hillclimber tpn\n"
+  },
+  "host": {
+    "hostname": "instance-1",
+    "ENV": {},
+    "python_version": "3.9.9",
+    "cpu": "Intel(R) Xeon(R) CPU @ 2.80GHz",
+    "os": [
+      "Linux",
+      "Linux-5.10.68+-x86_64-with-glibc2.28"
+    ]
+  },
+  "format": "MongoObserver-0.7.0",
+  "status": "COMPLETED",
+  "stop_time": "2021-12-19T04:50:11",
+  "command": "run_experiment",
+  "meta": {
+    "options": {
+      "--priority": null,
+      "--help": false,
+      "--pdb": false,
+      "--unobserved": false,
+      "--beat-interval": null,
+      "--file_storage": null,
+      "--enforce_clean": false,
+      "--loglevel": null,
+      "--force": false,
+      "help": false,
+      "--queue": false,
+      "COMMAND": null,
+      "--sql": null,
+      "--comment": null,
+      "--print-config": false,
+      "with": true,
+      "--tiny_db": null,
+      "--mongo_db": null,
+      "--name": null,
+      "--capture": null,
+      "--s3": null,
+      "--debug": false,
+      "UPDATE": [
+        "custom_hill_climber_tpn_config",
+        "dataset.num_samples=500"
+      ]
+    },
+    "command": "run_experiment"
+  },
+  "config": {
+    "dataset": {
+      "num_samples": 500,
+      "path": "data/imdb-distilbert-first-1000.json"
+    },
+    "only_first_sentence": false,
+    "model": {
+      "name": "distilbert",
+      "quantized": true
+    },
+    "name": "custom-hill-climber-distilbert-imdb-distilbert-first-1000-proportionality-False",
+    "attribution_method": {
+      "iterations": 50,
+      "objective": "tpn",
+      "name": "custom-hill-climber",
+      "step_size": 0.1,
+      "bounds": [
+        0.4,
+        0.5
+      ]
+    },
+    "seed": 32723220,
+    "evaluation": {
+      "name": "proportionality",
+      "baseline_factory": "zero"
+    },
+    "apply_softmax_to_attributions": false
+  },
+  "heartbeat": "2021-12-19T04:50:11",
+  "_id": 1,
+  "result": null
+}
